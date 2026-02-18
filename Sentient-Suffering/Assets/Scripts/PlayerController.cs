@@ -15,12 +15,17 @@ public class PlayerController : MonoBehaviour
     public float returnSpeed = 160f;
     public float baseWheelRotation = -90f;
     public float steeringStrength = 2.5f;
+        public float maxTurnRate = 140f;
+        public float turnRateChangeSpeed = 400f;
 
     public float maxAcceleration = 25f;
     public float maxDeceleration = 15f;
     public float accelerationSpeed = 25f;
     public float decelerationSpeed = 30f;
 
+
+    private float wheelTurnAmount = 0f;
+    private float currentTurnRate = 0f;
     private float currentVelocity = 0f;
     private float currentRotation = 0f;
     private Rigidbody caRB;
@@ -102,6 +107,12 @@ public class PlayerController : MonoBehaviour
             rotationSpeed * Time.deltaTime
         );
 
+        wheelTurnAmount = Mathf.Clamp
+        (
+            currentRotation / rotationMax,
+            -1f,
+            1f
+        );
     }
 
     void ResetWheels()
@@ -111,6 +122,13 @@ public class PlayerController : MonoBehaviour
             currentRotation,
             0f,
             returnSpeed * Time.deltaTime
+        );
+
+        wheelTurnAmount = Mathf.Clamp
+        (
+            currentRotation / rotationMax,
+            -1f,
+            1f
         );
 
         ApplyWheelRotation();
@@ -183,12 +201,31 @@ public class PlayerController : MonoBehaviour
 
     void ApplyBodyRotation()
     {
-        float turnAmount = currentRotation * steeringStrength * Time.fixedDeltaTime;
+        float speedFactor = Mathf.Clamp01
+        (
+            Mathf.Abs(currentVelocity) / maxAcceleration
+        );
+
+        float movementDirection = 1f;
+
+        if (currentVelocity < 0f)
+        {
+            movementDirection = -1f;
+        }
+
+        float targetTurnRate = maxTurnRate * wheelTurnAmount * speedFactor * movementDirection;
+
+        currentTurnRate = Mathf.MoveTowards
+        (
+            currentTurnRate,
+            targetTurnRate,
+            turnRateChangeSpeed * Time.fixedDeltaTime
+        );
 
         Quaternion turnRotation = Quaternion.Euler
         (
             0f,
-            turnAmount,
+            currentTurnRate * Time.fixedDeltaTime,
             0f
         );
 
