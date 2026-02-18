@@ -4,20 +4,33 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    [Header("Car Parts"), Tooltip("Assign Us PLEASE")]
     public GameObject leftWheel;
     public GameObject rightWheel;
+    public GameObject lightBLDark;
+    public GameObject lightBRDark;
+    public GameObject lightBackDark;
+    public GameObject lightBLBright;
+    public GameObject lightBRBright;
+    public GameObject lightBackBright;
 
+
+    [Header("Car State Variables")]
     public bool isTurning;
     public bool isAccelerating;
+    public bool headLightOn = false;
+    public bool hazardsOn = false;
 
+    [Header("Rotation/Wheel Variables")]
     public float rotationMax = 35;
     public float rotationSpeed = 120f;
     public float returnSpeed = 160f;
     public float baseWheelRotation = -90f;
-    public float steeringStrength = 2.5f;
     public float maxTurnRate = 140f;
     public float turnRateChangeSpeed = 400f;
+    public float wheelSpinMaxSpeed = 1200f;
 
+    [Header("Acceleration Variables")]
     public float maxAcceleration = 25f;
     public float maxDeceleration = 15f;
     public float accelerationSpeed = 25f;
@@ -30,14 +43,14 @@ public class PlayerController : MonoBehaviour
     private float currentRotation = 0f;
     private Rigidbody caRB;
 
-    //Wheel turn variables for animating wheel movement:
+    [Header("Transforms For Spinnning Wheels")]
     public Transform frontLeftSteerPivot;
     public Transform frontRightSteerPivot;
     public Transform frontLeftWheelMesh;
     public Transform frontRightWheelMesh;
     public Transform backWheelsMesh;
 
-    public float wheelSpinMaxSpeed = 1200f;
+    
 
     private float wheelSpinAngle = 0f;
 
@@ -61,6 +74,7 @@ public class PlayerController : MonoBehaviour
     private void Update()
     {
         ControlInput();
+        ControlLights();
     }
 
     private void FixedUpdate()
@@ -79,6 +93,16 @@ public class PlayerController : MonoBehaviour
 
     void ControlInput()
     {
+        if (Input.GetKey(KeyCode.F))
+        {
+            headLightOn = !headLightOn;
+        }
+
+        if (Input.GetKey(KeyCode.H))
+        {
+            hazardsOn = !hazardsOn;
+        }
+
         if (Input.GetKey(KeyCode.A))
         {
             TurnWheels(true);
@@ -109,6 +133,15 @@ public class PlayerController : MonoBehaviour
             isAccelerating = false;
         }
 
+    }
+
+    void ControlLights()
+    {
+        if (headLightOn)
+        {
+
+        }
+        else if (headLightOn)
     }
 
     void TurnWheels(bool turningLeft)
