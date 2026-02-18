@@ -15,8 +15,8 @@ public class PlayerController : MonoBehaviour
     public float returnSpeed = 160f;
     public float baseWheelRotation = -90f;
     public float steeringStrength = 2.5f;
-        public float maxTurnRate = 140f;
-        public float turnRateChangeSpeed = 400f;
+    public float maxTurnRate = 140f;
+    public float turnRateChangeSpeed = 400f;
 
     public float maxAcceleration = 25f;
     public float maxDeceleration = 15f;
@@ -30,9 +30,32 @@ public class PlayerController : MonoBehaviour
     private float currentRotation = 0f;
     private Rigidbody caRB;
 
+    //Wheel turn variables for animating wheel movement:
+    public Transform frontLeftSteerPivot;
+    public Transform frontRightSteerPivot;
+    public Transform frontLeftWheelMesh;
+    public Transform frontRightWheelMesh;
+    public Transform backWheelsMesh;
+
+    public float wheelSpinMaxSpeed = 1200f;
+
+    private float wheelSpinAngle = 0f;
+
+    private Quaternion frontLeftBaseRotation;
+    private Quaternion frontRightBaseRotation;
+    private Quaternion frontLeftPivotBaseRotation;
+    private Quaternion frontRightPivotBaseRotation;
+    private Quaternion backBaseRotation;
+
+
     private void Awake()
     {
         caRB = GetComponent<Rigidbody>();
+        frontLeftBaseRotation = frontLeftWheelMesh.localRotation;
+        frontRightBaseRotation = frontRightWheelMesh.localRotation;
+        frontLeftPivotBaseRotation = frontLeftSteerPivot.localRotation;
+        frontRightPivotBaseRotation = frontRightSteerPivot.localRotation;
+        backBaseRotation = backWheelsMesh.localRotation;
     }
 
     private void Update()
@@ -50,6 +73,8 @@ public class PlayerController : MonoBehaviour
         if (isAccelerating) ApplyMovement();
         if (!isTurning) ResetWheels();
         if (!isAccelerating) SlowDownCar();
+
+        ApplyWheelSpin();
     }
 
     void ControlInput()
@@ -136,20 +161,23 @@ public class PlayerController : MonoBehaviour
 
     void ApplyWheelRotation()
     {
-        rightWheel.transform.localRotation = Quaternion.Euler
+        frontLeftSteerPivot.localRotation = frontLeftPivotBaseRotation * Quaternion.Euler
         (
             0f,
-            baseWheelRotation + currentRotation,
+            currentRotation,
             0f
         );
 
-        leftWheel.transform.localRotation = Quaternion.Euler
+        frontRightSteerPivot.localRotation = frontRightPivotBaseRotation * Quaternion.Euler
         (
             0f,
-            baseWheelRotation + currentRotation,
+            currentRotation,
             0f
         );
     }
+
+
+
     void Accelerate(bool movingForward)
     {
         isAccelerating = true;
@@ -234,6 +262,37 @@ public class PlayerController : MonoBehaviour
             caRB.rotation * turnRotation
         );
     }
+
+    void ApplyWheelSpin()
+    {
+        float speedFactor = Mathf.Clamp01
+        (
+            Mathf.Abs(currentVelocity) / maxAcceleration
+        );
+
+        float spinDirection = 1f;
+
+        if (currentVelocity < 0f)
+        {
+            spinDirection = -1f;
+        }
+
+        float spinStep = wheelSpinMaxSpeed * speedFactor * spinDirection * Time.fixedDeltaTime;
+
+        wheelSpinAngle = wheelSpinAngle + spinStep;
+
+        Quaternion spinRotation = Quaternion.Euler
+        (
+            0f,
+            0f,
+            wheelSpinAngle
+        );
+
+        frontLeftWheelMesh.localRotation = frontLeftBaseRotation * spinRotation;
+        frontRightWheelMesh.localRotation = frontRightBaseRotation * spinRotation;
+        backWheelsMesh.localRotation = backBaseRotation * spinRotation;
+    }
+
 
 
 }
