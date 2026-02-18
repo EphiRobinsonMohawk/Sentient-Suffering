@@ -7,12 +7,19 @@ public class PlayerController : MonoBehaviour
     [Header("Car Parts"), Tooltip("Assign Us PLEASE")]
     public GameObject leftWheel;
     public GameObject rightWheel;
-    public GameObject lightBLDark;
-    public GameObject lightBRDark;
-    public GameObject lightBackDark;
-    public GameObject lightBLBright;
-    public GameObject lightBRBright;
-    public GameObject lightBackBright;
+    public GameObject turnLightLD;
+    public GameObject turnLightLB;
+    public GameObject turnLightRD;
+    public GameObject turnLightRB;
+    public GameObject brakeLightCD;
+    public GameObject brakeLightCB;
+    public GameObject brakeLightLRD;
+    public GameObject brakeLightLRB;
+    public GameObject reverseLightD;
+    public GameObject reverseLightB;
+    public GameObject headLightD;
+    public GameObject headLightB;
+
 
 
     [Header("Car State Variables")]
@@ -20,6 +27,9 @@ public class PlayerController : MonoBehaviour
     public bool isAccelerating;
     public bool headLightOn = false;
     public bool hazardsOn = false;
+    public bool isBraking = false;
+    public bool isReversing = false;
+    private bool isTurningLeft = false;
 
     [Header("Rotation/Wheel Variables")]
     public float rotationMax = 35;
@@ -73,6 +83,8 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (currentVelocity < 0) isReversing = true;
+        else isReversing = false;
         ControlInput();
         ControlLights();
     }
@@ -93,21 +105,29 @@ public class PlayerController : MonoBehaviour
 
     void ControlInput()
     {
-        if (Input.GetKey(KeyCode.F))
+        if (Input.GetKeyDown(KeyCode.F))
         {
             headLightOn = !headLightOn;
         }
 
-        if (Input.GetKey(KeyCode.H))
+        if (Input.GetKeyDown(KeyCode.H))
         {
             hazardsOn = !hazardsOn;
+        }
+
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            isBraking = true;
+        }
+        if (Input.GetKeyUp(KeyCode.LeftShift))
+        {
+            isBraking = false;
         }
 
         if (Input.GetKey(KeyCode.A))
         {
             TurnWheels(true);
         }
-
         else if (Input.GetKey(KeyCode.D))
         {
             TurnWheels(false);
@@ -137,15 +157,45 @@ public class PlayerController : MonoBehaviour
 
     void ControlLights()
     {
-        if (headLightOn)
-        {
+        // HEADLIGHTS
+        headLightD.SetActive(!headLightOn);
+        headLightB.SetActive(headLightOn);
 
+        // CENTER BRAKE
+        brakeLightCD.SetActive(!isBraking);
+        brakeLightCB.SetActive(isBraking);
+
+        // LEFT/RIGHT BRAKE
+        brakeLightLRD.SetActive(!isBraking);
+        brakeLightLRB.SetActive(isBraking);
+
+        // REVERSE
+        reverseLightD.SetActive(!isReversing);
+        reverseLightB.SetActive(isReversing);
+
+        // TURN LEFT
+        if (!hazardsOn) turnLightLD.SetActive(!(isTurning && isTurningLeft));
+        if (!hazardsOn) turnLightLB.SetActive(isTurning && isTurningLeft);
+
+        // TURN RIGHT
+        if (!hazardsOn) turnLightRD.SetActive(!(isTurning && !isTurningLeft));
+        if (!hazardsOn) turnLightRB.SetActive(isTurning && !isTurningLeft);
+
+        // HAZARDS override turn signals
+        if (hazardsOn)
+        {
+            turnLightLD.SetActive(false);
+            turnLightLB.SetActive(true);
+
+            turnLightRD.SetActive(false);
+            turnLightRB.SetActive(true);
         }
-        else if (headLightOn)
     }
+
 
     void TurnWheels(bool turningLeft)
     {
+        isTurningLeft = turningLeft;
         isTurning = true;
 
         float targetRotation = 0f;
