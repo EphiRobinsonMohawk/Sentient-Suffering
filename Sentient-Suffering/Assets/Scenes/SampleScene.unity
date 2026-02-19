@@ -568,7 +568,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_TargetTexture
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 8400000, guid: 172d62bbba4e9754da19c1d88f261a62, type: 2}
     - target: {fileID: 6376410473691313248, guid: 35840c9f48c678841a8ec93a10c9a450,
         type: 3}
       propertyPath: cameraAnchor
@@ -691,7 +691,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &2005991788
 MonoBehaviour:
   m_ObjectHideFlags: 0
