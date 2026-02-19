@@ -564,6 +564,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5428509292844230419, guid: 35840c9f48c678841a8ec93a10c9a450,
+        type: 3}
+      propertyPath: m_TargetTexture
+      value: 
+      objectReference: {fileID: 0}
     - target: {fileID: 6376410473691313248, guid: 35840c9f48c678841a8ec93a10c9a450,
         type: 3}
       propertyPath: cameraAnchor
@@ -579,6 +584,11 @@ PrefabInstance:
       propertyPath: cameraAnchor2
       value: 
       objectReference: {fileID: 9144423850792318141}
+    - target: {fileID: 6376410473691313248, guid: 35840c9f48c678841a8ec93a10c9a450,
+        type: 3}
+      propertyPath: mouseSensitivity
+      value: 360
+      objectReference: {fileID: 0}
     - target: {fileID: 6608833289039175392, guid: 35840c9f48c678841a8ec93a10c9a450,
         type: 3}
       propertyPath: m_Name
@@ -681,7 +691,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &2005991788
 MonoBehaviour:
   m_ObjectHideFlags: 0
