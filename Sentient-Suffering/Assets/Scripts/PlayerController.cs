@@ -32,19 +32,22 @@ public class PlayerController : MonoBehaviour
     private bool isTurningLeft = false;
 
     [Header("Rotation/Wheel Variables")]
-    public float rotationMax = 35;
-    public float rotationSpeed = 120f;
-    public float returnSpeed = 160f;
+    public float reverseThreshhold = 1f;
+    public float rotationMax = 35f;
+    public float rotationSpeed = 100f;
+    public float returnSpeed = 80f;
     public float baseWheelRotation = -90f;
-    public float maxTurnRate = 140f;
-    public float turnRateChangeSpeed = 400f;
+    public float maxTurnRate = 100f;
+    public float turnRateChangeSpeed = 300f;
     public float wheelSpinMaxSpeed = 1200f;
 
     [Header("Acceleration Variables")]
+    public float brakeSpeed = 45f;
+    public float speedToZero = 15f;
     public float maxAcceleration = 25f;
-    public float maxDeceleration = 15f;
-    public float accelerationSpeed = 25f;
-    public float decelerationSpeed = 30f;
+    public float maxDeceleration = 20f;
+    public float accelerationSpeed = 20f;
+    public float reverseAccelerationSpeed = 8f;
 
 
     private float wheelTurnAmount = 0f;
@@ -83,10 +86,11 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        if (currentVelocity < 0) isReversing = true;
+        if (currentVelocity < -reverseThreshhold) isReversing = true;
         else isReversing = false;
         ControlInput();
         ControlLights();
+        if (isBraking) Brake();
     }
 
     private void FixedUpdate()
@@ -94,10 +98,12 @@ public class PlayerController : MonoBehaviour
         if (isTurning)
         {
             ApplyWheelRotation(); 
-            ApplyBodyRotation();
         }
-        if (isAccelerating) ApplyMovement();
         if (!isTurning) ResetWheels();
+
+        ApplyBodyRotation();
+
+        if (isAccelerating) ApplyMovement();
         if (!isAccelerating) SlowDownCar();
 
         ApplyWheelSpin();
@@ -281,7 +287,7 @@ public class PlayerController : MonoBehaviour
             (
             currentVelocity,
             -maxDeceleration,
-            decelerationSpeed * Time.deltaTime
+            reverseAccelerationSpeed * Time.deltaTime
             );
         }
     }
@@ -304,7 +310,19 @@ public class PlayerController : MonoBehaviour
         (
             currentVelocity,
             0f,
-            decelerationSpeed * Time.deltaTime
+            speedToZero * Time.deltaTime
+        );
+
+        ApplyMovement();
+    }
+
+    void Brake()
+    {
+        currentVelocity = Mathf.MoveTowards
+        (
+            currentVelocity,
+            0f,
+            brakeSpeed * Time.deltaTime
         );
 
         ApplyMovement();
