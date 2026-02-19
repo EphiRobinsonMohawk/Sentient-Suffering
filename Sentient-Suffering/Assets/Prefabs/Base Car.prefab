@@ -447,37 +447,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!1 &3656048564730327469
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1579898088249018467}
-  m_Layer: 0
-  m_Name: Door R Pivot
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1579898088249018467
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3656048564730327469}
-  serializedVersion: 2
-  m_LocalRotation: {x: -6.123234e-17, y: 1, z: 6.123234e-17, w: -3.7493994e-33}
-  m_LocalPosition: {x: 1.5105455, y: 0.35912263, z: -1.3267958}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 2346143930905955776}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3753540198262457996
 GameObject:
   m_ObjectHideFlags: 0
@@ -1245,9 +1214,8 @@ Transform:
   - {fileID: 2739564553867244436}
   - {fileID: 3793315069905332067}
   - {fileID: 6636002407414371333}
-  - {fileID: 247874010982866418}
+  - {fileID: 5057441640598085453}
   - {fileID: 3761561809965433179}
-  - {fileID: 1579898088249018467}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &8024890513929824424
@@ -1262,6 +1230,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 710651d017f44ba4fbf3128a46e85297, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  leftDoor: {fileID: 8213937156769489523}
+  rightDoor: {fileID: 3753540198262457996}
   leftWheel: {fileID: 1579595237225661593}
   rightWheel: {fileID: 4972760058708192446}
   turnLightLD: {fileID: 8804497462509103739}
@@ -1282,6 +1252,16 @@ MonoBehaviour:
   hazardsOn: 0
   isBraking: 0
   isReversing: 0
+  isTurningLeft: 0
+  rightDoorOpen: 0
+  leftDoorOpen: 0
+  maxOpenAngle: 100
+  openSpeed: 80
+  closeSpeed: 55
+  leftDoorClosedY: 0
+  rightDoorClosedY: 0
+  leftDoorY: 0
+  rightDoorY: 0
   reverseThreshhold: 1
   rotationMax: 35
   rotationSpeed: 100
@@ -1349,38 +1329,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3.6744719, y: 3.5641594, z: 6.5342655}
   m_Center: {x: 0.018472433, y: -0.14312005, z: -2.1025438}
---- !u!1 &7005513734095015755
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 247874010982866418}
-  m_Layer: 0
-  m_Name: Door L Pivot
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &247874010982866418
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7005513734095015755}
-  serializedVersion: 2
-  m_LocalRotation: {x: -6.123234e-17, y: 1, z: 6.123234e-17, w: -3.7493994e-33}
-  m_LocalPosition: {x: -1.5105456, y: 0.35912263, z: 0.8}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 5057441640598085453}
-  m_Father: {fileID: 2346143930905955776}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7663984354667232456
 GameObject:
   m_ObjectHideFlags: 0
@@ -1688,12 +1636,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8213937156769489523}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: -0, z: 4.75}
+  m_LocalRotation: {x: -6.123234e-17, y: 1, z: 6.123234e-17, w: -3.7493994e-33}
+  m_LocalPosition: {x: -1.5105456, y: 0.35912263, z: -1.55}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 247874010982866418}
+  m_Father: {fileID: 2346143930905955776}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &1362143234782432330
 MeshFilter:

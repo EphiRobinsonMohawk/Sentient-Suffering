@@ -5,6 +5,8 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     [Header("Car Parts"), Tooltip("Assign Us PLEASE")]
+    public GameObject leftDoor;
+    public GameObject rightDoor;
     public GameObject leftWheel;
     public GameObject rightWheel;
     public GameObject turnLightLD;
@@ -29,7 +31,18 @@ public class PlayerController : MonoBehaviour
     public bool hazardsOn = false;
     public bool isBraking = false;
     public bool isReversing = false;
-    private bool isTurningLeft = false;
+    public bool isTurningLeft = false;
+    public bool rightDoorOpen = false;
+    public bool leftDoorOpen = false;
+
+    [Header("Car Door Variables")]
+    public float maxOpenAngle = 90f;
+    public float openSpeed = 20f;
+    public float closeSpeed = 20f;
+    public float leftDoorClosedY = 0f;
+    public float rightDoorClosedY = 0f;
+    public float leftDoorY = 0f;
+    public float rightDoorY = 0f;
 
     [Header("Rotation/Wheel Variables")]
     public float reverseThreshhold = 1f;
@@ -77,6 +90,10 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         caRB = GetComponent<Rigidbody>();
+        leftDoorClosedY = leftDoor.transform.localEulerAngles.y;
+        rightDoorClosedY = rightDoor.transform.localEulerAngles.y;
+        leftDoorY = leftDoorClosedY;
+        rightDoorY = rightDoorClosedY;
         frontLeftBaseRotation = frontLeftWheelMesh.localRotation;
         frontRightBaseRotation = frontRightWheelMesh.localRotation;
         frontLeftPivotBaseRotation = frontLeftSteerPivot.localRotation;
@@ -86,15 +103,18 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+
         if (currentVelocity < -reverseThreshhold) isReversing = true;
         else isReversing = false;
         ControlInput();
+        ControlDoors();
         ControlLights();
         if (isBraking) Brake();
     }
 
     private void FixedUpdate()
     {
+        
         if (isTurning)
         {
             ApplyWheelRotation(); 
@@ -111,6 +131,21 @@ public class PlayerController : MonoBehaviour
 
     void ControlInput()
     {
+        if (Input.GetKeyDown(KeyCode.Z))
+        {
+            leftDoorOpen = !leftDoorOpen;
+        }
+
+        if (Input.GetKeyDown(KeyCode.X))
+        {
+            Debug.Log("Honk!");
+        }
+
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            rightDoorOpen = !rightDoorOpen;
+        }
+
         if (Input.GetKeyDown(KeyCode.F))
         {
             headLightOn = !headLightOn;
@@ -160,6 +195,66 @@ public class PlayerController : MonoBehaviour
         }
 
     }
+
+    void ControlDoors()
+    {
+        if (leftDoorOpen)
+        {
+            leftDoorY = Mathf.MoveTowardsAngle
+            (
+                leftDoorY,
+                leftDoorClosedY + maxOpenAngle,
+                openSpeed * Time.deltaTime
+            );
+        }
+        else if (!leftDoorOpen)
+        {
+            leftDoorY = Mathf.MoveTowardsAngle
+            (
+                leftDoorY,
+                leftDoorClosedY,
+                closeSpeed * Time.deltaTime
+            );
+        }
+
+        leftDoor.transform.localRotation = Quaternion.Euler
+        (
+            0f,
+            leftDoorY,
+            0f
+        );
+
+
+
+        if (rightDoorOpen)
+        {
+            rightDoorY = Mathf.MoveTowardsAngle
+            (
+                rightDoorY,
+                rightDoorClosedY - maxOpenAngle,
+                openSpeed * Time.deltaTime
+            );
+        }
+        else if (!rightDoorOpen)
+        {
+            rightDoorY = Mathf.MoveTowardsAngle
+            (
+                rightDoorY,
+                rightDoorClosedY,
+                closeSpeed * Time.deltaTime
+            );
+        }
+
+        rightDoor.transform.localRotation = Quaternion.Euler
+        (
+            0f,
+            rightDoorY,
+            0f
+        );
+    }
+
+
+
 
     void ControlLights()
     {
@@ -393,7 +488,4 @@ public class PlayerController : MonoBehaviour
         frontRightWheelMesh.localRotation = frontRightBaseRotation * spinRotation;
         backWheelsMesh.localRotation = backBaseRotation * spinRotation;
     }
-
-
-
 }

@@ -122,6 +122,12 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &149441121 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3753540198262457996, guid: b151128f85f954d4eb6d74bf31ce7507,
+    type: 3}
+  m_PrefabInstance: {fileID: 9144423850792318140}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -488,6 +494,12 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &1840822942 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8213937156769489523, guid: b151128f85f954d4eb6d74bf31ce7507,
+    type: 3}
+  m_PrefabInstance: {fileID: 9144423850792318140}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1889409479
 GameObject:
   m_ObjectHideFlags: 0
@@ -720,6 +732,31 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: Base Car
+      objectReference: {fileID: 0}
+    - target: {fileID: 8024890513929824424, guid: b151128f85f954d4eb6d74bf31ce7507,
+        type: 3}
+      propertyPath: leftDoor
+      value: 
+      objectReference: {fileID: 1840822942}
+    - target: {fileID: 8024890513929824424, guid: b151128f85f954d4eb6d74bf31ce7507,
+        type: 3}
+      propertyPath: openSpeed
+      value: 200
+      objectReference: {fileID: 0}
+    - target: {fileID: 8024890513929824424, guid: b151128f85f954d4eb6d74bf31ce7507,
+        type: 3}
+      propertyPath: rightDoor
+      value: 
+      objectReference: {fileID: 149441121}
+    - target: {fileID: 8024890513929824424, guid: b151128f85f954d4eb6d74bf31ce7507,
+        type: 3}
+      propertyPath: closeSpeed
+      value: 140
+      objectReference: {fileID: 0}
+    - target: {fileID: 8024890513929824424, guid: b151128f85f954d4eb6d74bf31ce7507,
+        type: 3}
+      propertyPath: maxOpenAngle
+      value: 95
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
