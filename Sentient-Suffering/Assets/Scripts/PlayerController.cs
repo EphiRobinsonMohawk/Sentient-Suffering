@@ -479,9 +479,10 @@ public class PlayerController : MonoBehaviour
 
         Quaternion spinRotation = Quaternion.Euler
         (
+
+            wheelSpinAngle,
             0f,
-            0f,
-            wheelSpinAngle
+            0f
         );
 
         frontLeftWheelMesh.localRotation = frontLeftBaseRotation * spinRotation;
