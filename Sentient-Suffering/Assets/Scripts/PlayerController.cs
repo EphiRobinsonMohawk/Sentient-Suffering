@@ -5,6 +5,10 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     [Header("Car Parts"), Tooltip("Assign Us PLEASE")]
+    public GameObject headLightL;
+    public GameObject headLightR;
+    public GameObject flapTop;
+    public GameObject flapBottom;
     public GameObject leftDoor;
     public GameObject rightDoor;
     public GameObject leftWheel;
@@ -76,7 +80,22 @@ public class PlayerController : MonoBehaviour
     public Transform frontRightWheelMesh;
     public Transform backWheelsMesh;
 
-    
+    [Header("Headlight + Flap Variables")]
+    public float maxHeadlightAngle = 45f;
+    public float headlightOpenSpeed = 20f;
+    public float headlightCloseSpeed = 20f;
+
+    public float maxFlapAngle = 45f;
+    public float flapOpenSpeed = 20f;
+    public float flapCloseSpeed = 20f;
+
+    public float headLightClosedX = 0f;
+    public float headLightX = 0f;
+
+    public float flapTopClosedX = 0f;
+    public float flapBottomClosedX = 0f;
+    public float flapTopX = 0f;
+    public float flapBottomX = 0f;
 
     private float wheelSpinAngle = 0f;
 
@@ -85,11 +104,24 @@ public class PlayerController : MonoBehaviour
     private Quaternion frontLeftPivotBaseRotation;
     private Quaternion frontRightPivotBaseRotation;
     private Quaternion backBaseRotation;
+    private Quaternion headLightBaseRotation;
+    private Quaternion flapTopBaseRotation;
+    private Quaternion flapBottomBaseRotation;
 
 
     private void Awake()
     {
         caRB = GetComponent<Rigidbody>();
+        headLightBaseRotation = headLightL.transform.localRotation;
+
+        flapTopBaseRotation = flapTop.transform.localRotation;
+        flapBottomBaseRotation = flapBottom.transform.localRotation;
+        headLightClosedX = headLightL.transform.localEulerAngles.x;
+        headLightX = headLightClosedX;
+        flapTopClosedX = flapTop.transform.localEulerAngles.x;
+        flapBottomClosedX = flapBottom.transform.localEulerAngles.x;
+        flapTopX = flapTopClosedX;
+        flapBottomX = flapBottomClosedX;
         leftDoorClosedY = leftDoor.transform.localEulerAngles.y;
         rightDoorClosedY = rightDoor.transform.localEulerAngles.y;
         leftDoorY = leftDoorClosedY;
@@ -109,6 +141,8 @@ public class PlayerController : MonoBehaviour
         ControlInput();
         ControlDoors();
         ControlLights();
+        ControlHeadlights();
+        ControlFlaps();
         if (isBraking) Brake();
     }
 
@@ -194,6 +228,74 @@ public class PlayerController : MonoBehaviour
             isAccelerating = false;
         }
 
+    }
+    void ControlHeadlights()
+    {
+        if (headLightOn)
+        {
+            headLightX = Mathf.MoveTowardsAngle
+            (
+                headLightX,
+                maxHeadlightAngle,
+                headlightOpenSpeed * Time.deltaTime
+            );
+        }
+        else
+        {
+            headLightX = Mathf.MoveTowardsAngle
+            (
+                headLightX,
+                0f,
+                headlightCloseSpeed * Time.deltaTime
+            );
+        }
+
+        Quaternion rotationOffset = Quaternion.Euler(headLightX, 0f, 0f);
+
+        headLightL.transform.localRotation = headLightBaseRotation * rotationOffset;
+        headLightR.transform.localRotation = headLightBaseRotation * rotationOffset;
+    }
+
+    void ControlFlaps()
+    {
+        if (hazardsOn)
+        {
+            flapTopX = Mathf.MoveTowardsAngle
+            (
+                flapTopX,
+                maxFlapAngle,
+                flapOpenSpeed * Time.deltaTime
+            );
+
+            flapBottomX = Mathf.MoveTowardsAngle
+            (
+                flapBottomX,
+                -maxFlapAngle,
+                flapOpenSpeed * Time.deltaTime
+            );
+        }
+        else
+        {
+            flapTopX = Mathf.MoveTowardsAngle
+            (
+                flapTopX,
+                0f,
+                flapCloseSpeed * Time.deltaTime
+            );
+
+            flapBottomX = Mathf.MoveTowardsAngle
+            (
+                flapBottomX,
+                0f,
+                flapCloseSpeed * Time.deltaTime
+            );
+        }
+
+        Quaternion topOffset = Quaternion.Euler(flapTopX, 0f, 0f);
+        Quaternion bottomOffset = Quaternion.Euler(flapBottomX, 0f, 0f);
+
+        flapTop.transform.localRotation = flapTopBaseRotation * topOffset;
+        flapBottom.transform.localRotation = flapBottomBaseRotation * bottomOffset;
     }
 
     void ControlDoors()
