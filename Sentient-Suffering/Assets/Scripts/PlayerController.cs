@@ -79,6 +79,7 @@ public class PlayerController : MonoBehaviour
     public Transform frontLeftWheelMesh;
     public Transform frontRightWheelMesh;
     public Transform backWheelsMesh;
+    public Transform car;
 
     [Header("Headlight + Flap Variables")]
     public float maxHeadlightAngle = 45f;
@@ -99,6 +100,43 @@ public class PlayerController : MonoBehaviour
 
     private float wheelSpinAngle = 0f;
 
+    [Header("Ground + Air Control")]
+    public float groundRayStart = 0.6f;
+    public float groundRayLength = 1.6f;
+    public LayerMask groundMask = ~0;
+
+    public float extraGravity = 35f;
+    public float downforce = 60f;
+    public float lateralGrip = 8f;
+
+    public float groundDrag = 0.2f;
+    public float brakeDrag = 2.0f;
+    public float airDrag = 0.02f;
+
+    [Header("Rotation Clamp")]
+    public float maxPitchDegrees = 30f;
+    public float yawDamp = 3.5f; // kills tiny unwanted yaw when steering is neutral
+
+    private bool grounded;
+    private bool wasGrounded;
+    private RaycastHit groundHit;
+
+    [Header("Auto Level Pitch (X)")]
+    public float pitchReturnSpeedGround = 360f; // deg/sec
+    public float pitchReturnSpeedAir = 540f;    // deg/sec
+
+    [Header("Slope Launch Control")]
+    public float extraGravityAir = 20f;         // downward accel while airborne
+    public float maxUpVelGrounded = 1.5f;       // caps upward pop from slope collisions
+
+    [Header("Air Control")]
+    public float airControlStrength = 6f;       // how fast air steering nudges horizontal velocity
+    public float maxDepenetration = 6f;
+
+    [Header("Yaw Wobble Fix")]
+    public float yawStabilizeWhenStraight = 8f;   // higher = stronger yaw damping
+    public float yawInputDeadzone = 0.02f;        // treat tiny steering as zero
+
     private Quaternion frontLeftBaseRotation;
     private Quaternion frontRightBaseRotation;
     private Quaternion frontLeftPivotBaseRotation;
@@ -112,6 +150,14 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         caRB = GetComponent<Rigidbody>();
+
+        caRB.interpolation = RigidbodyInterpolation.Interpolate;
+        caRB.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
+
+        // Roll locked by physics, pitch clamped by code, yaw unlimited
+        caRB.constraints = RigidbodyConstraints.FreezeRotationZ;
+        caRB.maxDepenetrationVelocity = maxDepenetration;
+        caRB.angularDrag = 1.5f;
         headLightBaseRotation = headLightL.transform.localRotation;
 
         flapTopBaseRotation = flapTop.transform.localRotation;
@@ -135,7 +181,6 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-
         if (currentVelocity < -reverseThreshhold) isReversing = true;
         else isReversing = false;
         ControlInput();
@@ -143,24 +188,34 @@ public class PlayerController : MonoBehaviour
         ControlLights();
         ControlHeadlights();
         ControlFlaps();
-        if (isBraking) Brake();
     }
 
     private void FixedUpdate()
     {
-        
-        if (isTurning)
-        {
-            ApplyWheelRotation(); 
-        }
-        if (!isTurning) ResetWheels();
+        GroundCheck();
+
+        if (isTurning) ApplyWheelRotation();
+        else ResetWheels();
 
         ApplyBodyRotation();
 
-        if (isAccelerating) ApplyMovement();
-        if (!isAccelerating) SlowDownCar();
+        // ---- One movement decision per physics tick ----
+        if (grounded)
+        {
+            if (isBraking) Brake();
+            else if (isAccelerating) ApplyMovement();
+            else SlowDownCar();
+        }
+        else
+        {
+            // Air: preserve momentum; allow gentle control only when accelerating
+            if (isAccelerating) ApplyMovementAir();
+            caRB.drag = airDrag;
+        }
 
         ApplyWheelSpin();
+        StabilizeYaw();
+        StabilizeOnTerrain();     // stick + grip + rotation leveling/clamp
     }
 
     void ControlInput()
@@ -229,6 +284,50 @@ public class PlayerController : MonoBehaviour
         }
 
     }
+
+    void StabilizeYaw()
+    {
+        // When wheels are basically centered, kill leftover yaw spin
+        if (Mathf.Abs(wheelTurnAmount) < yawInputDeadzone && !isTurning)
+        {
+            Vector3 av = caRB.angularVelocity;
+            av.y = Mathf.MoveTowards(av.y, 0f, yawStabilizeWhenStraight * Time.fixedDeltaTime);
+            caRB.angularVelocity = av;
+        }
+    }
+
+    void GroundCheck()
+    {
+        wasGrounded = grounded;
+
+        Vector3 rayStart = caRB.position + Vector3.up * groundRayStart;
+        grounded = Physics.Raycast(rayStart, Vector3.down, out groundHit, groundRayLength, groundMask);
+
+        if (!wasGrounded && grounded)
+        {
+            Vector3 flatForward = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
+            currentVelocity = Vector3.Dot(caRB.velocity, flatForward);
+        }
+    }
+
+
+    void ApplyMovementAir()
+    {
+        Vector3 flatForward = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
+
+        Vector3 vel = caRB.velocity;
+        Vector3 horiz = new Vector3(vel.x, 0f, vel.z);
+        Vector3 targetHoriz = flatForward * currentVelocity;
+
+        horiz = Vector3.MoveTowards(horiz, targetHoriz, airControlStrength * Time.fixedDeltaTime);
+
+        vel.x = horiz.x;
+        vel.z = horiz.z;
+        caRB.velocity = vel;
+    }
+
+
+
     void ControlHeadlights()
     {
         if (headLightOn)
@@ -395,6 +494,61 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    void StabilizeOnTerrain()
+    {
+        if (grounded)
+        {
+            caRB.drag = isBraking ? brakeDrag : groundDrag;
+
+            Vector3 stickDir = -groundHit.normal;
+
+            // Stick to ground (normal-based feels better on slopes)
+            caRB.AddForce(stickDir * extraGravity, ForceMode.Acceleration);
+
+            // Speed-based downforce (also along normal)
+            float speed = caRB.velocity.magnitude;
+            caRB.AddForce(stickDir * (downforce * speed), ForceMode.Acceleration);
+
+            // Lateral grip on the ground plane
+            Vector3 rightOnGround = Vector3.ProjectOnPlane(transform.right, groundHit.normal).normalized;
+            Vector3 lateralVel = Vector3.Project(caRB.velocity, rightOnGround);
+            caRB.AddForce(-lateralVel * lateralGrip, ForceMode.Acceleration);
+
+            // Kill slope “launch pop”
+            Vector3 v = caRB.velocity;
+            if (v.y > maxUpVelGrounded) v.y = maxUpVelGrounded;
+            caRB.velocity = v;
+        }
+        else
+        {
+            caRB.drag = airDrag;
+            caRB.AddForce(Vector3.down * extraGravityAir, ForceMode.Acceleration);
+        }
+
+        // ---- Auto-level + clamp rotation ----
+        Vector3 e = caRB.rotation.eulerAngles;
+
+        float x = NormalizeAngle(e.x);
+        float y = e.y;
+
+        float returnSpeed = grounded ? pitchReturnSpeedGround : pitchReturnSpeedAir;
+
+        // Return X toward 0 like wheel reset
+        x = Mathf.MoveTowardsAngle(x, 0f, returnSpeed * Time.fixedDeltaTime);
+
+        // Clamp pitch and hard zero roll
+        x = Mathf.Clamp(x, -maxPitchDegrees, maxPitchDegrees);
+
+        caRB.MoveRotation(Quaternion.Euler(x, y, 0f));
+    }
+
+    float NormalizeAngle(float a)
+    {
+        while (a > 180f) a -= 360f;
+        while (a < -180f) a += 360f;
+        return a;
+    }
+
 
     void TurnWheels(bool turningLeft)
     {
@@ -491,14 +645,23 @@ public class PlayerController : MonoBehaviour
 
     void ApplyMovement()
     {
-        Vector3 movementDirection = transform.forward * currentVelocity;
+        Vector3 moveDir;
 
-        caRB.velocity = new Vector3
-        (
-            movementDirection.x,
-            caRB.velocity.y,
-            movementDirection.z
-        );
+        if (grounded)
+        {
+            // Drive along the slope plane
+            moveDir = Vector3.ProjectOnPlane(transform.forward, groundHit.normal).normalized;
+        }
+        else
+        {
+            // Fallback: flat forward
+            moveDir = Vector3.ProjectOnPlane(transform.forward, Vector3.up).normalized;
+        }
+
+        Vector3 desired = moveDir * currentVelocity;
+
+        // Keep current vertical velocity so gravity/jumps feel normal
+        caRB.velocity = new Vector3(desired.x, caRB.velocity.y, desired.z);
     }
 
     void SlowDownCar()
