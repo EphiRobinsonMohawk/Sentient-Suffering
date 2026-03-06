@@ -25,6 +25,7 @@ public class PlayerController : MonoBehaviour
     public GameObject reverseLightB;
     public GameObject headLightD;
     public GameObject headLightB;
+    public EatHuman humanConsumer;
 
 
 
@@ -220,6 +221,19 @@ public class PlayerController : MonoBehaviour
 
     void ControlInput()
     {
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            if (humanConsumer.humanInRange != null && humanConsumer.humanInRange.isStunned == true) humanConsumer.eatHuman();
+            else if (humanConsumer.humanInRange != null)
+            {
+                Debug.Log("Target Human Not Stunned");
+            }
+            else
+            {
+                Debug.Log("No Human In Range");
+            }
+        }
+
         if (Input.GetKeyDown(KeyCode.Z))
         {
             leftDoorOpen = !leftDoorOpen;
